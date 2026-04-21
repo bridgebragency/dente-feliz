@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Meta Ads – Dente Feliz</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", Arial, sans-serif; background: #f0f3f8; color: #1a1a2e; padding: 20px; }
+  .dash { max-width: 1200px; margin: 0 auto; }
+
+  .header { display: flex; align-items: center; gap: 16px; padding: 18px 24px; background: #1a2d6b; border-radius: 14px; margin-bottom: 20px; }
+  .logo-box { width: 56px; height: 56px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 2.5px solid #f5c200; }
+  .logo-box img { width: 56px; height: 56px; object-fit: cover; border-radius: 50%; }
+  .header-text h1 { font-size: 18px; font-weight: 600; color: #fff; }
+  .header-text p { font-size: 13px; color: rgba(255,255,255,0.65); margin-top: 2px; }
+  .period-badge { margin-left: auto; background: rgba(245,194,0,0.15); border: 1.5px solid #f5c200; border-radius: 8px; padding: 6px 14px; font-size: 12px; color: #f5c200; white-space: nowrap; font-weight: 600; }
+
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .kpi { background: #fff; border-radius: 10px; padding: 16px; border-top: 3px solid #1a2d6b; }
+  .kpi.gold { border-top-color: #f5c200; }
+  .kpi-label { font-size: 11px; color: #777; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .kpi-value { font-size: 24px; font-weight: 700; color: #1a1a2e; line-height: 1; }
+  .kpi-sub { font-size: 11px; color: #999; margin-top: 5px; }
+
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+  .row1 { margin-bottom: 16px; }
+  .section { background: #fff; border-radius: 12px; padding: 18px 20px; }
+  .section-title { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; }
+  .chart-wrap { position: relative; width: 100%; }
+
+  .table-outer { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 1100px; }
+  th { font-size: 10px; color: #888; font-weight: 700; text-align: left; padding: 8px 10px; border-bottom: 2px solid #eee; white-space: nowrap; background: #fafafa; }
+  td { padding: 9px 10px; border-bottom: 1px solid #f5f5f5; vertical-align: middle; white-space: nowrap; font-weight: normal; }
+  tr:hover td { background: #f5f8ff; }
+  tr:last-child td { border-bottom: none; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 5px; vertical-align: middle; }
+  .dot-a { background: #1a2d6b; }
+  .dot-i { background: #bbb; }
+  .bar-mini { height: 3px; background: #1a2d6b; border-radius: 2px; margin-top: 4px; opacity: 0.4; }
+  .legend { display: flex; gap: 14px; margin-bottom: 10px; font-size: 11px; color: #777; }
+  .legend span { display: flex; align-items: center; gap: 5px; }
+  .leg-sq { width: 10px; height: 10px; border-radius: 2px; display: inline-block; flex-shrink: 0; }
+  .scroll-hint { font-size: 11px; color: #aaa; text-align: right; margin-bottom: 6px; font-style: italic; }
+  .tag-tipo { font-size: 10px; padding: 2px 7px; border-radius: 4px; }
+  .tag-msg { background: #e8ecf8; color: #1a2d6b; }
+  .footer { text-align: center; font-size: 11px; color: #bbb; margin-top: 20px; padding-bottom: 10px; }
+</style>
+</head>
+<body>
+<div class="dash">
+
+<div class="header">
+  <div class="logo-box">
+    <img src="data:image/jpeg;base64,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" alt="Dente Feliz">
+  </div>
+  <div class="header-text">
+    <h1>Dente Feliz — Meta Ads</h1>
+    <p>Relatório de desempenho de campanhas</p>
+  </div>
+  <div class="period-badge">22 mar – 20 abr 2026</div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi"><div class="kpi-label">Investimento total</div><div class="kpi-value">R$ 2.985,85</div><div class="kpi-sub">4 campanhas no período</div></div>
+  <div class="kpi"><div class="kpi-label">Resultados totais</div><div class="kpi-value">527</div><div class="kpi-sub">Conversas iniciadas</div></div>
+  <div class="kpi gold"><div class="kpi-label">Custo por resultado</div><div class="kpi-value">R$ 5,66</div><div class="kpi-sub">Média das campanhas</div></div>
+  <div class="kpi gold"><div class="kpi-label">Impressões totais</div><div class="kpi-value">256.995</div><div class="kpi-sub">Alcance: 126.344 pessoas</div></div>
+  <div class="kpi"><div class="kpi-label">Cliques totais</div><div class="kpi-value">3.025</div><div class="kpi-sub">Todos os cliques</div></div>
+  <div class="kpi"><div class="kpi-label">CTR médio</div><div class="kpi-value">1,33%</div><div class="kpi-sub">Taxa de cliques</div></div>
+  <div class="kpi gold"><div class="kpi-label">CPM médio</div><div class="kpi-value">R$ 13,56</div><div class="kpi-sub">Custo por mil impressões</div></div>
+  <div class="kpi gold"><div class="kpi-label">Engajamentos</div><div class="kpi-value">2.364</div><div class="kpi-sub">Interações com posts</div></div>
+</div>
+
+<!-- 3 graficos lado a lado -->
+<div class="row3">
+  <div class="section">
+    <div class="section-title">Investimento por campanha (R$)</div>
+    <div class="legend">
+      <span><span class="leg-sq" style="background:#1a2d6b"></span>Ativa</span>
+      <span><span class="leg-sq" style="background:#bbb"></span>Inativa</span>
+    </div>
+    <div class="chart-wrap" style="height:260px">
+      <canvas id="chartInvest" role="img" aria-label="Investimento por campanha"></canvas>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">Mensagens iniciadas</div>
+    <div class="legend">
+      <span><span class="leg-sq" style="background:#1a2d6b"></span>Mensagens</span>
+    </div>
+    <div class="chart-wrap" style="height:260px">
+      <canvas id="chartMensagens" role="img" aria-label="Mensagens por campanha"></canvas>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">Contatos por mensagem</div>
+    <div class="legend">
+      <span><span class="leg-sq" style="background:#f5c200"></span>Contatos</span>
+    </div>
+    <div class="chart-wrap" style="height:260px">
+      <canvas id="chartContatos" role="img" aria-label="Contatos por mensagem"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- linha de onda CPR -->
+<div class="row1 section">
+  <div class="section-title">Custo por resultado (R$)</div>
+  <div class="legend">
+    <span><span class="leg-sq" style="background:#1a2d6b"></span>Conversas por mensagem</span>
+  </div>
+  <div class="chart-wrap" style="height:200px">
+    <canvas id="chartCPR" role="img" aria-label="Custo por resultado por campanha"></canvas>
+  </div>
+</div>
+
+<!-- tabela completa -->
+<div class="section">
+  <div class="section-title">Detalhamento completo das campanhas</div>
+  <div class="scroll-hint">← Role para ver todas as colunas →</div>
+  <div class="table-outer">
+    <table>
+      <thead>
+        <tr>
+          <th>Campanha</th>
+          <th>Status</th>
+          <th>Investimento (R$)</th>
+          <th>Tipo de resultado</th>
+          <th>Resultados</th>
+          <th>Contatos por mensagem</th>
+          <th>Custo por result. (R$)</th>
+          <th>Impressões</th>
+          <th>Alcance</th>
+          <th>CPM (R$)</th>
+          <th>Frequência</th>
+          <th>Cliques (todos)</th>
+          <th>CPC (R$)</th>
+          <th>CTR (%)</th>
+          <th>ThruPlays</th>
+          <th>Engajamentos</th>
+          <th>Visitas ao perfil</th>
+          <th>Compartilhamentos</th>
+          <th>Seguidores</th>
+          <th>Início</th>
+          <th>Encerramento</th>
+        </tr>
+      </thead>
+      <tbody id="campTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="footer">Gerado automaticamente com dados do Meta Ads · Dente Feliz · Abril 2026</div>
+</div>
+
+<script>
+const BLUE = "#1a2d6b", GOLD = "#f5c200", GRAY = "#bbb", LBLUE = "rgba(26,45,107,0.10)";
+
+const camps = [
+  { name: "Campanha de mensagens - Aparelho", short: "Aparelho", status: "active", invest: 897.27, tipo: "Mensagens", results: 149, contatos: 143, cpr: 6.02, impr: 111678, alcance: 57018, cpm: 8.03, freq: 1.96, cliques: 1118, cpc: 0.80, ctr: 1.00, thru: null, eng: 954, visitas: 451, comp: 18, seg: 30, inicio: "22/03/2026", fim: "20/04/2026" },
+  { name: "ENGAJAMENTO PRÓTESE Campanha", short: "Prótese", status: "active", invest: 749.60, tipo: "Mensagens", results: 207, contatos: 198, cpr: 3.62, impr: 34827, alcance: 15434, cpm: 21.52, freq: 2.26, cliques: 776, cpc: 0.97, ctr: 2.23, thru: 1, eng: 574, visitas: 106, comp: 10, seg: 10, inicio: "22/03/2026", fim: "20/04/2026" },
+  { name: "04 - IMPLANTE - MSG INSTA - R$25", short: "Implante", status: "active", invest: 748.25, tipo: "Mensagens", results: 88, contatos: 95, cpr: 8.50, impr: 66386, alcance: 28894, cpm: 11.27, freq: 2.30, cliques: 604, cpc: 1.24, ctr: 0.91, thru: null, eng: 503, visitas: 231, comp: 6, seg: 19, inicio: "22/03/2026", fim: "20/04/2026" },
+  { name: "ENGAJAMENTO ORTO", short: "Orto", status: "active", invest: 590.73, tipo: "Mensagens", results: 83, contatos: 84, cpr: 7.12, impr: 44104, alcance: 24998, cpm: 13.39, freq: 1.76, cliques: 527, cpc: 1.12, ctr: 1.19, thru: null, eng: 333, visitas: 195, comp: 2, seg: 8, inicio: "22/03/2026", fim: "20/04/2026" },
+];
+
+const allLabels = camps.map(c => c.short);
+const investColors = camps.map(c => c.status === "active" ? BLUE : GRAY);
+
+new Chart(document.getElementById("chartInvest"), {
+  type: "bar",
+  data: { labels: allLabels, datasets: [{ data: camps.map(c => c.invest), backgroundColor: investColors, borderRadius: 4, borderSkipped: false }] },
+  options: { indexAxis: "y", responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => " R$ " + ctx.raw.toLocaleString("pt-BR", {minimumFractionDigits:2}) } } },
+    scales: { x: { ticks: { callback: v => "R$" + (v/1000).toFixed(1) + "k", font:{size:11} }, grid:{color:"#f0f0f0"} }, y: { ticks: { font:{size:11} } } }
+  }
+});
+
+new Chart(document.getElementById("chartMensagens"), {
+  type: "bar",
+  data: { labels: allLabels, datasets: [{ data: camps.map(c => c.results), backgroundColor: BLUE, borderRadius: 4, borderSkipped: false }] },
+  options: { indexAxis: "y", responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => " " + ctx.raw + " mensagens" } } },
+    scales: { x: { ticks: { font:{size:11} }, grid:{color:"#f0f0f0"} }, y: { ticks: { font:{size:11} } } }
+  }
+});
+
+new Chart(document.getElementById("chartContatos"), {
+  type: "bar",
+  data: { labels: allLabels, datasets: [{ data: camps.map(c => c.contatos), backgroundColor: GOLD, borderRadius: 4, borderSkipped: false }] },
+  options: { indexAxis: "y", responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => " " + ctx.raw + " contatos" } } },
+    scales: { x: { ticks: { font:{size:11} }, grid:{color:"#f0f0f0"} }, y: { ticks: { font:{size:11} } } }
+  }
+});
+
+new Chart(document.getElementById("chartCPR"), {
+  type: "line",
+  data: {
+    labels: allLabels,
+    datasets: [{
+      label: "CPR (R$)",
+      data: camps.map(c => c.cpr),
+      borderColor: BLUE,
+      backgroundColor: LBLUE,
+      fill: true,
+      tension: 0.35,
+      pointBackgroundColor: BLUE,
+      pointBorderColor: BLUE,
+      pointRadius: 6,
+      borderWidth: 2
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => " R$ " + ctx.raw.toFixed(2) } } },
+    scales: {
+      y: { ticks: { callback: v => "R$ " + v.toFixed(2), font:{size:11} }, grid:{color:"#f0f0f0"} },
+      x: { ticks: { font:{size:11} }, grid:{display:false} }
+    }
+  }
+});
+
+const maxImpr = Math.max(...camps.map(c => c.impr));
+const tbody = document.getElementById("campTable");
+camps.forEach(c => {
+  const pct = Math.round((c.impr / maxImpr) * 100);
+  const thru = c.thru != null ? c.thru.toLocaleString("pt-BR") : "—";
+  tbody.innerHTML += `<tr>
+    <td style="min-width:220px">${c.name}</td>
+    <td><span class="dot dot-a"></span>Ativa</td>
+    <td>R$ ${c.invest.toLocaleString("pt-BR", {minimumFractionDigits:2})}</td>
+    <td><span class="tag-tipo tag-msg">${c.tipo}</span></td>
+    <td style="text-align:center">${c.results}</td>
+    <td style="text-align:center">${c.contatos}</td>
+    <td style="text-align:center">R$ ${c.cpr.toFixed(2)}</td>
+    <td><div style="font-size:11px;color:#555">${c.impr.toLocaleString("pt-BR")}</div><div class="bar-mini" style="width:${pct}%"></div></td>
+    <td>${c.alcance.toLocaleString("pt-BR")}</td>
+    <td>R$ ${c.cpm.toFixed(2)}</td>
+    <td style="text-align:center">${c.freq.toFixed(2)}</td>
+    <td style="text-align:center">${c.cliques.toLocaleString("pt-BR")}</td>
+    <td>R$ ${c.cpc.toFixed(2)}</td>
+    <td style="text-align:center">${c.ctr.toFixed(2)}%</td>
+    <td style="text-align:center">${thru}</td>
+    <td style="text-align:center">${c.eng.toLocaleString("pt-BR")}</td>
+    <td style="text-align:center">${c.visitas}</td>
+    <td style="text-align:center">${c.comp}</td>
+    <td style="text-align:center">${c.seg}</td>
+    <td style="color:#999;font-size:11px">${c.inicio}</td>
+    <td style="color:#999;font-size:11px">${c.fim}</td>
+  </tr>`;
+});
+</script>
+</body>
+</html>
